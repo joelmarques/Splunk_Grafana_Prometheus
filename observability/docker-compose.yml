@@ -1,0 +1,46 @@
+version: '3.3'
+
+networks:
+ obs-network:
+  driver: bridge
+
+volumes:
+ prometheus_data:
+ grafana_data:
+ splunk_data:
+ 
+services:
+ prometheus:
+  image: prom/prometheus:latest
+  volumes:
+   - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+   - prometheus_data:/prometheus
+  networks:
+   - obs-network
+  ports:
+   - 9090:9090
+  extra_hosts:
+      - "host.docker.internal:host-gateway"
+      
+ grafana:
+  image: grafana/grafana:latest
+  volumes:
+   - grafana_data:/grafana
+  networks:
+   - obs-network
+  ports:
+   - 3000:3000
+ 
+ splunk:
+  image: splunk/splunk:latest
+  volumes:
+   - splunk_data:/logs
+  networks:
+   - obs-network
+  ports:
+   - 4000:8000
+   - 8088:8088
+  environment:
+   - SPLUNK_START_ARGS=--accept-license
+   - SPLUNK_HEC_TOKEN=11111111-1111-1111-1111-1111111111113
+   - SPLUNK_PASSWORD=changed!
